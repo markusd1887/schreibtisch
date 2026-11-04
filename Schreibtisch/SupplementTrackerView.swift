@@ -10,46 +10,26 @@ struct SupplementTrackerView: View {
 
     @Query(sort: \Supplement.createdAt) private var supplements: [Supplement]
 
-    // Eingaben für ein neues Supplement
-    @State private var newName = ""
-    @State private var newMorning = true
-    @State private var newNoon = false
-    @State private var newEvening = false
-    @State private var newInterval = 1
+    /// Ist das Fenster zum Anlegen eines Supplements offen?
+    @State private var isAdding = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Supplements")
-                .font(.title2.bold())
-
-            // Eingabe für neue Supplements
             HStack {
-                TextField("Neues Supplement …", text: $newName)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(addSupplement)
-                Button("Hinzufügen", systemImage: "plus", action: addSupplement)
-                    .disabled(!canAdd)
+                Text("Supplements")
+                    .font(.title2.bold())
+                Spacer()
+                // Nur das +-Symbol; der Text dient Bedienungshilfen und dem Tooltip.
+                Button("Supplement hinzufügen", systemImage: "plus") { isAdding = true }
+                    .labelStyle(.iconOnly)
+                    .help("Supplement hinzufügen")
             }
-            HStack {
-                Toggle("Morgens", isOn: $newMorning)
-                Toggle("Mittags", isOn: $newNoon)
-                Toggle("Abends", isOn: $newEvening)
-            }
-            .toggleStyle(.checkbox)
-
-            // Wie oft? Ein "Picker" ist ein Auswahlmenü.
-            Picker("Wie oft:", selection: $newInterval) {
-                ForEach(1...7, id: \.self) { days in
-                    Text(Supplement.intervalText(days)).tag(days)
-                }
-            }
-            .fixedSize()
 
             if supplements.isEmpty {
                 ContentUnavailableView(
                     "Keine Supplements",
                     systemImage: "pills",
-                    description: Text("Lege oben dein erstes Supplement an.")
+                    description: Text("Klicke auf + und lege dein erstes Supplement an.")
                 )
             } else {
                 List {
@@ -88,6 +68,12 @@ struct SupplementTrackerView: View {
             }
         }
         .padding()
+        // Ein "Sheet" ist ein Fenster, das von oben über die Ansicht gleitet.
+        .sheet(isPresented: $isAdding) {
+            AddSupplementSheet { supplement in
+                modelContext.insert(supplement)
+            }
+        }
     }
 
     /// Supplements, die laut Intervall heute dran sind.
@@ -98,25 +84,6 @@ struct SupplementTrackerView: View {
     /// Supplements, die heute Pause haben.
     private var notDueToday: [Supplement] {
         supplements.filter { !$0.isDue(on: .now) }
-    }
-
-    private var trimmedName: String {
-        newName.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    /// Hinzufügen geht nur mit Namen und mindestens einer Tageszeit.
-    private var canAdd: Bool {
-        !trimmedName.isEmpty && (newMorning || newNoon || newEvening)
-    }
-
-    private func addSupplement() {
-        guard canAdd else { return }
-        modelContext.insert(Supplement(name: trimmedName,
-                                       takesMorning: newMorning,
-                                       takesNoon: newNoon,
-                                       takesEvening: newEvening,
-                                       intervalDays: newInterval))
-        newName = ""
     }
 
     private func delete(_ supplement: Supplement) {
@@ -171,6 +138,77 @@ private struct SupplementRow: View {
         .contextMenu {
             Button("Supplement löschen", role: .destructive, action: onDelete)
         }
+    }
+}
+
+/// Das Fenster zum Anlegen eines Supplements: Name, Tageszeiten und wie oft.
+private struct AddSupplementSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let onAdd: (Supplement) -> Void
+
+    @State private var name = ""
+    @State private var morning = true
+    @State private var noon = false
+    @State private var evening = false
+    @State private var interval = 1
+
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Hinzufügen geht nur mit Namen und mindestens einer Tageszeit.
+    private var canAdd: Bool {
+        !trimmedName.isEmpty && (morning || noon || evening)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Neues Supplement")
+                .font(.title3.bold())
+
+            TextField("Name, z. B. Vitamin D", text: $name)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit(add)
+
+            Text("Wann nimmst du es?")
+                .font(.headline)
+            HStack(spacing: 16) {
+                Toggle("Morgens", isOn: $morning)
+                Toggle("Mittags", isOn: $noon)
+                Toggle("Abends", isOn: $evening)
+            }
+            .toggleStyle(.checkbox)
+
+            // Ein "Picker" ist ein Auswahlmenü.
+            Picker("Wie oft?", selection: $interval) {
+                ForEach(1...7, id: \.self) { days in
+                    Text(Supplement.intervalText(days)).tag(days)
+                }
+            }
+            .fixedSize()
+
+            HStack {
+                Spacer()
+                Button("Abbrechen", role: .cancel) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Hinzufügen", action: add)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(!canAdd)
+            }
+        }
+        .padding()
+        .frame(width: 360)
+    }
+
+    private func add() {
+        guard canAdd else { return }
+        onAdd(Supplement(name: trimmedName,
+                         takesMorning: morning,
+                         takesNoon: noon,
+                         takesEvening: evening,
+                         intervalDays: interval))
+        dismiss()
     }
 }
 
