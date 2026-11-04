@@ -157,7 +157,7 @@ struct DeskPadBackground: View {
         .overlay(alignment: .top) {
             // Der dunkle Leimrand oben am Block
             UnevenRoundedRectangle(topLeadingRadius: 6, topTrailingRadius: 6)
-                .fill(Color(red: 0.25, green: 0.3, blue: 0.28))
+                .fill(Color.leatherDark)
                 .frame(height: 10)
         }
         .shadow(color: .black.opacity(0.35), radius: 10, y: 6)

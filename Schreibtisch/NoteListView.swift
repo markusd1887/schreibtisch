@@ -88,12 +88,7 @@ private struct StickyNote<Content: View>: View {
     let index: Int
     @ViewBuilder let content: Content
 
-    private static var colors: [Color] { [
-        Color(red: 1.0, green: 0.93, blue: 0.55),   // gelb
-        Color(red: 1.0, green: 0.80, blue: 0.85),   // rosa
-        Color(red: 0.75, green: 0.92, blue: 0.78),  // grün
-        Color(red: 0.78, green: 0.88, blue: 1.0)    // blau
-    ] }
+    private static var colors: [Color] { Color.stickyNoteColors }
     private static var angles: [Double] { [-1.5, 1.2, -0.6, 1.8] }
 
     var body: some View {

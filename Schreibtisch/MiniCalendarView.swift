@@ -26,16 +26,16 @@ struct MiniCalendarView: View {
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 10)
-        .padding(.top, 18) // Platz für den roten Rand oben
+        .padding(.top, 18) // Platz für den Rand oben
         .background {
             RoundedRectangle(cornerRadius: 6)
                 .fill(Color.notepadPaper)
                 .shadow(color: .black.opacity(0.3), radius: 5, y: 3)
         }
         .overlay(alignment: .top) {
-            // Roter Rand oben, wie bei einem Abreißkalender
+            // Bordeaux-Rand oben, wie bei einem Abreißkalender
             UnevenRoundedRectangle(topLeadingRadius: 6, topTrailingRadius: 6)
-                .fill(Color(red: 0.75, green: 0.2, blue: 0.2))
+                .fill(Color.bordeaux)
                 .frame(height: 10)
         }
         .environment(\.colorScheme, .light)
@@ -146,13 +146,13 @@ private struct DayCell: View {
         VStack(spacing: 1) {
             Text(date.formatted(.dateTime.day()))
                 .font(.caption.weight(isToday ? .bold : .regular))
-                .foregroundStyle(isSelected ? .white : (isToday ? .red : .primary))
+                .foregroundStyle(isSelected ? .white : (isToday ? Color.bordeaux : .primary))
                 .frame(width: 22, height: 18)
                 .background {
                     if isSelected {
-                        Circle().fill(Color.red.opacity(0.8))
+                        Circle().fill(Color.bordeaux)
                     } else if isToday {
-                        Circle().strokeBorder(Color.red.opacity(0.6), lineWidth: 1)
+                        Circle().strokeBorder(Color.bordeaux.opacity(0.7), lineWidth: 1)
                     }
                 }
 

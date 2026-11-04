@@ -71,11 +71,16 @@ struct SupplementTrackerView: View {
             }
         }
         .padding(14)
-        // Der Kunststoff-Korpus der Box
+        // Der Korpus der Box: Messing, wie ein altes Pillendöschen
         .background {
             RoundedRectangle(cornerRadius: 18)
-                .fill(Color(red: 0.36, green: 0.55, blue: 0.75).gradient)
-                .shadow(color: .black.opacity(0.35), radius: 8, y: 5)
+                .fill(LinearGradient(colors: [.brass, .brassDark],
+                                     startPoint: .topLeading, endPoint: .bottomTrailing))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18)
+                        .strokeBorder(Color.white.opacity(0.25), lineWidth: 1)
+                }
+                .shadow(color: .black.opacity(0.45), radius: 8, y: 5)
         }
         .environment(\.colorScheme, .light)
         // Ein "Sheet" ist ein Fenster, das von oben über die Ansicht gleitet.

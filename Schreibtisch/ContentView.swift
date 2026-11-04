@@ -26,6 +26,8 @@ struct ContentView: View {
             // Mitte: die Unterlage
             DayPageView(day: $day)
                 .environment(\.colorScheme, .light) // Papier bleibt hell
+                .padding(18)
+                .background(LeatherPad()) // Die Lederunterlage unter dem Block
                 .frame(minWidth: 520, maxWidth: .infinity, maxHeight: .infinity)
 
             // Rechte Tischseite

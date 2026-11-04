@@ -9,13 +9,9 @@ import SwiftUI
 struct DeskBackground: View {
     var body: some View {
         ZStack {
-            // Grundfarbe: warmes Holz, oben etwas heller als unten
+            // Grundfarbe: dunkler Nussbaum, oben etwas heller als unten
             LinearGradient(
-                colors: [
-                    Color(red: 0.62, green: 0.42, blue: 0.26),
-                    Color(red: 0.52, green: 0.33, blue: 0.19),
-                    Color(red: 0.44, green: 0.27, blue: 0.15)
-                ],
+                colors: [.walnutLight, .walnut, .walnutDark],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -58,11 +54,63 @@ struct DeskBackground: View {
     }
 }
 
-// MARK: - Papierfarben
+// MARK: - Schreibunterlage aus Leder
 
+/// Die Lederunterlage, auf der der Papierblock liegt:
+/// rotbraunes Leder mit Messing-Rand und einer gestrichelten Ziernaht.
+struct LeatherPad: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(LinearGradient(colors: [.leather, .leatherDark],
+                                 startPoint: .top, endPoint: .bottom))
+            // Ziernaht: eine gestrichelte Linie knapp innerhalb des Rands
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(Color.brass.opacity(0.55),
+                                  style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+                    .padding(6)
+            }
+            // Messing-Rand außen
+            .overlay {
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.brass, lineWidth: 2)
+            }
+            .shadow(color: .black.opacity(0.45), radius: 12, y: 6)
+    }
+}
+
+// MARK: - Farbpalette
+
+/// Alle Farben des Schreibtischs an einer Stelle.
+///
+/// Eine "Farbpalette" heißt: Die Ansichten benutzen nur diese Namen
+/// (z. B. `.leather`) statt fester Zahlenwerte. Will man einen Farbton ändern,
+/// passiert das nur hier – und überall ändert er sich mit.
 extension Color {
-    /// Leicht cremiges Notizblock-Weiß
-    static let notepadPaper = Color(red: 0.99, green: 0.98, blue: 0.94)
+    // Holz (Nussbaum)
+    static let walnutLight = Color(red: 0.38, green: 0.25, blue: 0.17)
+    static let walnut      = Color(red: 0.30, green: 0.19, blue: 0.13)
+    static let walnutDark  = Color(red: 0.21, green: 0.13, blue: 0.09)
+
+    // Leder und Messing
+    static let leather     = Color(red: 0.45, green: 0.19, blue: 0.14)
+    static let leatherDark = Color(red: 0.33, green: 0.13, blue: 0.10)
+    static let brass       = Color(red: 0.72, green: 0.58, blue: 0.35)
+    static let brassDark   = Color(red: 0.50, green: 0.38, blue: 0.20)
+
+    /// Bordeaux für Akzente (Kalender-Kopf, heutiger Tag)
+    static let bordeaux    = Color(red: 0.50, green: 0.13, blue: 0.16)
+
+    /// Warmes Elfenbein für alles Papier
+    static let notepadPaper = Color(red: 0.97, green: 0.94, blue: 0.86)
+
+    /// Gedämpfte Klebezettel-Farben: Honig, Altrosa, Salbei, Taubenblau
+    static let stickyNoteColors: [Color] = [
+        Color(red: 0.95, green: 0.85, blue: 0.56),
+        Color(red: 0.92, green: 0.77, blue: 0.75),
+        Color(red: 0.79, green: 0.86, blue: 0.73),
+        Color(red: 0.77, green: 0.83, blue: 0.89)
+    ]
 }
 
 #Preview {
