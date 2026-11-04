@@ -21,5 +21,22 @@ Der Entwickler ist **Einsteiger**. Deshalb:
 2. **Fachbegriffe kurz erklären**, wenn sie zum ersten Mal vorkommen.
 3. **Kleine Schritte** – lieber eine Funktion nach der anderen.
 4. **Vor Änderungen kurz den Plan zeigen** (was wird geändert und warum).
-5. **Nach jeder funktionierenden Funktion committen** (Git-Commit mit verständlicher Nachricht).
+5. **Nach jeder funktionierenden Funktion committen** (Git-Commit mit verständlicher Nachricht) und danach `git push`.
 6. Antworten auf **Deutsch**.
+7. **Klicktest durch den Nutzer**: Claude kann die App nicht selbst bedienen. Nach sichtbaren Änderungen den Nutzer die App ausprobieren lassen und erst nach seinem OK committen.
+
+## Mehrere Aufgaben gleichzeitig
+Der Nutzer schreibt oft einen längeren Prompt mit mehreren Wünschen. Dann:
+- Den Prompt in einzelne Aufgaben aufteilen und jede an die passende Sitzung geben (oder eine neue starten).
+- **Parallel** nur Aufgaben, die **verschiedene Dateien** betreffen. Alle Sitzungen arbeiten im selben Ordner – zwei Sitzungen dürfen nie gleichzeitig dieselbe Datei ändern.
+- Aufgaben, die dieselben Dateien betreffen oder alles betreffen (z. B. Look, Farben), **nacheinander**.
+- Dem Nutzer jedes Mal sagen, was gleichzeitig läuft und was wartet.
+- Jede Sitzung committet nur ihre eigenen Dateien (`git add <dateien>`, nicht `git add -A`).
+- Keine Worktrees (getrennte Projektkopien) – zu kompliziert für den Anfang.
+
+## Später geplant (noch nicht umsetzen!)
+Ziel: Am Mac alles in dieser App erledigen und unterwegs dieselben Daten auf dem iPhone haben.
+- **Kalender**: Über **EventKit** (Apple-Framework) die Termine der Kalender-App anzeigen, später auch anlegen. iCloud synchronisiert automatisch mit dem iPhone. Erster Schritt: nur lesend, Termine auf dem Tagesblatt.
+- **To-Dos → App „Erinnerungen“**: Die To-Dos werden später über EventKit in den Apple-Erinnerungen gespeichert statt in SwiftData. Deshalb jetzt an den To-Dos vor allem Optik und Bedienung ausbauen, nicht das SwiftData-Datenmodell aufwendig erweitern.
+- **Notizen** bleiben in der App (SwiftData). Für Apple Notizen gibt es keine offizielle Schnittstelle.
+- Das passt weiter zu „alles lokal“: kein eigener Server, die Daten laufen nur über den iCloud-Account des Nutzers.
