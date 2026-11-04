@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// Ein kleiner Monatskalender wie ein Tischkalender-Blatt.
+/// Ein Monatskalender, der an der Wand hängt (siehe `WallView`).
 ///
 /// - Ein Punkt unter dem Tag: Es gibt offene To-Dos.
 /// - Eine kleine Glocke: Ein Klebezettel erinnert an diesem Tag.
@@ -19,14 +19,14 @@ struct MiniCalendarView: View {
     private let calendar = Calendar.current
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 5) {
             header
             weekdayRow
             dayGrid
         }
         .padding(.horizontal, 10)
-        .padding(.bottom, 10)
-        .padding(.top, 18) // Platz für den Rand oben
+        .padding(.bottom, 8)
+        .padding(.top, 16) // Platz für den Rand oben
         .background {
             RoundedRectangle(cornerRadius: 6)
                 .fill(Color.notepadPaper)
@@ -82,7 +82,7 @@ struct MiniCalendarView: View {
         let openTodoDays = daysWithOpenTodos
         let reminderDays = daysWithReminders
 
-        return LazyVGrid(columns: columns, spacing: 2) {
+        return LazyVGrid(columns: columns, spacing: 1) {
             ForEach(Array(cells.enumerated()), id: \.offset) { _, date in
                 if let date {
                     let key = calendar.startOfDay(for: date)
@@ -93,7 +93,7 @@ struct MiniCalendarView: View {
                             hasReminder: reminderDays.contains(key))
                         .onTapGesture { selectedDay = key }
                 } else {
-                    Color.clear.frame(height: 28) // leeres Feld vor dem 1. des Monats
+                    Color.clear.frame(height: 21) // leeres Feld vor dem 1. des Monats
                 }
             }
         }
@@ -147,7 +147,7 @@ private struct DayCell: View {
             Text(date.formatted(.dateTime.day()))
                 .font(.caption.weight(isToday ? .bold : .regular))
                 .foregroundStyle(isSelected ? .white : (isToday ? Color.bordeaux : .primary))
-                .frame(width: 22, height: 18)
+                .frame(width: 20, height: 15)
                 .background {
                     if isSelected {
                         Circle().fill(Color.bordeaux)
@@ -167,9 +167,9 @@ private struct DayCell: View {
                         .foregroundStyle(.orange)
                 }
             }
-            .frame(height: 7)
+            .frame(height: 5)
         }
-        .frame(maxWidth: .infinity, minHeight: 28)
+        .frame(maxWidth: .infinity, minHeight: 21)
         .contentShape(Rectangle()) // ganzes Feld ist klickbar
     }
 }

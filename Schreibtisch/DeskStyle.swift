@@ -79,6 +79,21 @@ struct LeatherPad: View {
     }
 }
 
+// MARK: - Tischkante
+
+/// Die hintere Tischkante: Hier stößt der Tisch an die Wand.
+/// Ein dunkler Streifen, der nach vorn ausläuft, erzeugt die Tiefe.
+struct DeskEdge: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            Rectangle().fill(Color.walnutDark).frame(height: 3)
+            LinearGradient(colors: [.black.opacity(0.35), .clear], startPoint: .top, endPoint: .bottom)
+                .frame(height: 14)
+        }
+        .allowsHitTesting(false)
+    }
+}
+
 // MARK: - Farbpalette
 
 /// Alle Farben des Schreibtischs an einer Stelle.
@@ -100,6 +115,11 @@ extension Color {
 
     /// Bordeaux für Akzente (Kalender-Kopf, heutiger Tag)
     static let bordeaux    = Color(red: 0.50, green: 0.13, blue: 0.16)
+
+    // Wand (warmer Putz) und Fensterrahmen
+    static let wallLight   = Color(red: 0.91, green: 0.86, blue: 0.78)
+    static let wall        = Color(red: 0.83, green: 0.77, blue: 0.67)
+    static let windowFrame = Color(red: 0.96, green: 0.93, blue: 0.86)
 
     /// Warmes Elfenbein für alles Papier
     static let notepadPaper = Color(red: 0.97, green: 0.94, blue: 0.86)
