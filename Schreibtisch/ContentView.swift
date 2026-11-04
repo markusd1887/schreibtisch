@@ -1,17 +1,17 @@
 import SwiftUI
-import Playgrounds
+import SwiftData
 
+/// Die Hauptansicht der App.
+/// Später wird hier das Schreibtisch-Dashboard mit mehreren Kacheln stehen.
+/// Vorerst zeigen wir nur die To-Do-Liste.
 struct ContentView: View {
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        TodoListView()
+            .frame(minWidth: 400, minHeight: 400)
     }
 }
 
 #Preview {
     ContentView()
-}
-
-#Playground {
-    _ = 1 + 2
+        .modelContainer(for: TodoItem.self, inMemory: true)
 }
