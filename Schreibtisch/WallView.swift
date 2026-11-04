@@ -338,6 +338,7 @@ private struct PotShape: Shape {
 
 #Preview {
     WallView(selectedDay: .constant(Calendar.current.startOfDay(for: .now)))
-        .modelContainer(for: [TodoItem.self, Note.self], inMemory: true)
+        .modelContainer(for: [TodoItem.self, Note.self, Supplement.self, SupplementIntake.self], inMemory: true)
+        .environment(CalendarStore())
         .frame(width: 1280, height: 250)
 }

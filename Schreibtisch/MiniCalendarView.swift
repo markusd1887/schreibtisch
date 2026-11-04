@@ -3,6 +3,8 @@ import SwiftData
 
 /// Ein Monatskalender, der an der Wand hängt (siehe `WallView`).
 ///
+/// - Ein kleiner Strich unter dem Tag: An dem Tag gibt es einen Termin
+///   (in der Farbe seines Kalenders, wie in der Kalender-App).
 /// - Ein Punkt unter dem Tag: Es gibt offene To-Dos.
 /// - Eine kleine Glocke: Ein Klebezettel erinnert an diesem Tag.
 /// - Klick auf einen Tag schlägt ihn auf der Unterlage auf.
@@ -12,6 +14,8 @@ struct MiniCalendarView: View {
 
     @Query private var todos: [TodoItem]
     @Query private var notes: [Note]
+    /// Termine aus dem Mac-Kalender (für die Markierungen)
+    @Environment(CalendarStore.self) private var calendarStore
 
     /// Der Monat, der gerade im Kalender zu sehen ist (erster Tag des Monats).
     @State private var month = MiniCalendarView.startOfMonth(.now)
@@ -42,6 +46,11 @@ struct MiniCalendarView: View {
         // Blättert man auf der Unterlage in einen anderen Monat, geht der Kalender mit.
         .onChange(of: selectedDay) { _, newDay in
             month = Self.startOfMonth(newDay)
+        }
+        // Termine für den angezeigten Monat laden – beim Start und bei jedem Umblättern.
+        // `.task(id:)` läuft erneut, sobald sich `month` ändert.
+        .task(id: month) {
+            calendarStore.loadMarks(forMonth: month)
         }
     }
 
@@ -89,6 +98,7 @@ struct MiniCalendarView: View {
                     DayCell(date: date,
                             isSelected: calendar.isDate(date, inSameDayAs: selectedDay),
                             isToday: calendar.isDateInToday(date),
+                            eventColor: calendarStore.monthMarks[key],
                             hasTodos: openTodoDays.contains(key),
                             hasReminder: reminderDays.contains(key))
                         .onTapGesture { selectedDay = key }
@@ -139,6 +149,8 @@ private struct DayCell: View {
     let date: Date
     let isSelected: Bool
     let isToday: Bool
+    /// Farbe des ersten Termins an diesem Tag – `nil`, wenn es keinen gibt.
+    let eventColor: Color?
     let hasTodos: Bool
     let hasReminder: Bool
 
@@ -156,8 +168,11 @@ private struct DayCell: View {
                     }
                 }
 
-            // Markierungen: Punkt für To-Dos, Glocke für Erinnerungen
+            // Markierungen: Strich für Termine, Punkt für To-Dos, Glocke für Erinnerungen
             HStack(spacing: 2) {
+                if let eventColor {
+                    Capsule().fill(eventColor).frame(width: 7, height: 3)
+                }
                 if hasTodos {
                     Circle().fill(Color.blue).frame(width: 4, height: 4)
                 }
@@ -177,6 +192,7 @@ private struct DayCell: View {
 #Preview {
     MiniCalendarView(selectedDay: .constant(Calendar.current.startOfDay(for: .now)))
         .modelContainer(for: [TodoItem.self, Note.self], inMemory: true)
+        .environment(CalendarStore())
         .frame(width: 250)
         .padding()
 }

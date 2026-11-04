@@ -1,5 +1,6 @@
 import SwiftUI
 import EventKit
+import AppKit
 
 /// Die Verbindung zu deinem Mac-Kalender.
 ///
@@ -26,6 +27,11 @@ final class CalendarStore {
 
     /// Wie viele Tage ab heute geladen werden.
     let daysAhead = 4
+
+    /// Markierungen für den Wandkalender: Tag (0:00 Uhr) → Farbe des ersten Termins an dem Tag.
+    private(set) var monthMarks: [Date: Color] = [:]
+    /// Der Monat, den der Wandkalender gerade zeigt.
+    @ObservationIgnored private var markedMonth: Date?
 
     @ObservationIgnored private let store = EKEventStore()
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
@@ -71,6 +77,39 @@ final class CalendarStore {
         let end = calendar.date(byAdding: .day, value: daysAhead, to: start)!
         let predicate = store.predicateForEvents(withStart: start, end: end, calendars: nil)
         events = store.events(matching: predicate).sorted { $0.startDate < $1.startDate }
+        reloadMarks()
+    }
+
+    /// Der Wandkalender meldet hier, welchen Monat er zeigt (erster Tag des Monats).
+    func loadMarks(forMonth month: Date) {
+        markedMonth = month
+        reloadMarks()
+    }
+
+    /// Sucht alle Tage im angezeigten Monat, an denen mindestens ein Termin stattfindet.
+    /// Mehrtägige Termine markieren jeden ihrer Tage.
+    private func reloadMarks() {
+        guard access == .granted, let month = markedMonth else {
+            monthMarks = [:]
+            return
+        }
+        let calendar = Calendar.current
+        let monthEnd = calendar.date(byAdding: .month, value: 1, to: month)!
+        let predicate = store.predicateForEvents(withStart: month, end: monthEnd, calendars: nil)
+        let monthEvents = store.events(matching: predicate).sorted { $0.startDate < $1.startDate }
+
+        var marks: [Date: Color] = [:]
+        for event in monthEvents {
+            var day = calendar.startOfDay(for: max(event.startDate, month))
+            // `repeat` statt `while`: Auch ein Termin ohne Dauer markiert seinen Tag.
+            repeat {
+                if marks[day] == nil {
+                    marks[day] = Color(nsColor: event.calendar.color)
+                }
+                day = calendar.date(byAdding: .day, value: 1, to: day)!
+            } while day < event.endDate && day < monthEnd
+        }
+        monthMarks = marks
     }
 
     /// Die Termine, die an einem bestimmten Tag stattfinden.
