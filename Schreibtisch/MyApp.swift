@@ -23,6 +23,6 @@ import UserNotifications
         // `modelContainer` richtet den SwiftData-Speicher für die ganze App ein.
         // Alle Ansichten darin können damit Daten lesen und speichern.
         // Für jede Funktion ist hier ihr Modell eingetragen.
-        .modelContainer(for: [TodoItem.self, Note.self, Supplement.self, SupplementIntake.self])
+        .modelContainer(for: [TodoItem.self, DayNote.self, Note.self, Supplement.self, SupplementIntake.self])
     }
 }

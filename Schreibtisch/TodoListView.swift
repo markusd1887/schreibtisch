@@ -1,11 +1,14 @@
 import SwiftUI
 import SwiftData
 
-/// Die To-Do-Liste: Aufgaben anlegen, abhaken und löschen.
+/// Die To-Dos eines Tages: Aufgaben anlegen, abhaken und löschen.
 ///
-/// Die Ansicht ist in sich abgeschlossen. Später kann sie einfach als
-/// Kachel ins Schreibtisch-Dashboard gesetzt werden.
+/// Die Ansicht sitzt auf dem Tagesblatt in der Mitte der Unterlage
+/// und zeigt nur die Aufgaben des gerade aufgeschlagenen Tages.
 struct TodoListView: View {
+    /// Der Tag, dessen Aufgaben gezeigt werden.
+    let day: Date
+
     /// `@Environment(\.modelContext)` gibt uns Zugriff auf den Speicher.
     /// Darüber fügen wir Aufgaben hinzu oder löschen sie.
     @Environment(\.modelContext) private var modelContext
@@ -15,20 +18,21 @@ struct TodoListView: View {
     /// Sortiert nach Erstellungsdatum (älteste oben).
     @Query(sort: \TodoItem.createdAt) private var allTodos: [TodoItem]
 
-    /// Offene Aufgaben zuerst, erledigte rutschen nach unten.
-    /// (SwiftData kann nicht direkt nach Ja/Nein-Werten sortieren,
-    /// darum machen wir diesen Schritt selbst.)
+    /// Die Aufgaben dieses Tages: offene zuerst, erledigte rutschen nach unten.
     private var todos: [TodoItem] {
-        allTodos.filter { !$0.isDone } + allTodos.filter { $0.isDone }
+        let ofDay = allTodos.filter { $0.belongs(to: day) }
+        return ofDay.filter { !$0.isDone } + ofDay.filter { $0.isDone }
     }
 
     /// Der Text im Eingabefeld für eine neue Aufgabe.
     @State private var newTitle = ""
 
+    private var isToday: Bool { Calendar.current.isDateInToday(day) }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("To-Dos")
-                .font(.title2.bold())
+        VStack(alignment: .leading, spacing: 8) {
+            Text(isToday ? "Heute zu erledigen" : "Zu erledigen")
+                .font(.title3.bold())
 
             // Eingabezeile für neue Aufgaben
             HStack {
@@ -41,11 +45,10 @@ struct TodoListView: View {
             }
 
             if todos.isEmpty {
-                ContentUnavailableView(
-                    "Keine Aufgaben",
-                    systemImage: "checklist",
-                    description: Text("Lege oben deine erste Aufgabe an.")
-                )
+                Text("Keine Aufgaben für diesen Tag.")
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 6)
+                Spacer(minLength: 0)
             } else {
                 List {
                     ForEach(todos) { todo in
@@ -54,10 +57,9 @@ struct TodoListView: View {
                     .onDelete(perform: delete)
                 }
                 .listStyle(.inset)
-                .scrollContentBackground(.hidden) // Papier der Karte scheint durch
+                .scrollContentBackground(.hidden) // Papier scheint durch
             }
         }
-        .padding()
     }
 
     private var trimmedTitle: String {
@@ -66,7 +68,7 @@ struct TodoListView: View {
 
     private func addTodo() {
         guard !trimmedTitle.isEmpty else { return }
-        modelContext.insert(TodoItem(title: trimmedTitle))
+        modelContext.insert(TodoItem(title: trimmedTitle, day: day))
         newTitle = ""
     }
 
@@ -110,8 +112,9 @@ private struct TodoRow: View {
 }
 
 #Preview {
-    TodoListView()
+    TodoListView(day: .now)
         // Für die Vorschau: ein Speicher nur im Arbeitsspeicher (nicht auf der Festplatte).
         .modelContainer(for: TodoItem.self, inMemory: true)
         .frame(width: 400, height: 400)
+        .padding()
 }

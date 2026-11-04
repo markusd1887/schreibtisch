@@ -14,61 +14,70 @@ struct SupplementTrackerView: View {
     @State private var isAdding = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Supplements")
-                    .font(.title2.bold())
+                Text("Tablettenbox")
+                    .font(.title3.bold())
                 Spacer()
                 // Nur das +-Symbol; der Text dient Bedienungshilfen und dem Tooltip.
                 Button("Supplement hinzufügen", systemImage: "plus") { isAdding = true }
                     .labelStyle(.iconOnly)
                     .help("Supplement hinzufügen")
             }
+            .foregroundStyle(.white)
 
-            if supplements.isEmpty {
-                ContentUnavailableView(
-                    "Keine Supplements",
-                    systemImage: "pills",
-                    description: Text("Klicke auf + und lege dein erstes Supplement an.")
-                )
-            } else {
-                List {
-                    Text("Heute, \(Date.now.formatted(date: .complete, time: .omitted))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            Text("Heute, \(Date.now.formatted(date: .complete, time: .omitted))")
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.85))
 
-                    ForEach(DayTime.allCases) { time in
-                        let planned = dueToday.filter { $0.isScheduled(at: time) }
-                        if !planned.isEmpty {
-                            Section {
-                                ForEach(planned) { supplement in
-                                    SupplementRow(
-                                        supplement: supplement,
-                                        isTaken: takenBinding(for: supplement, at: time),
-                                        onDelete: { delete(supplement) }
-                                    )
-                                }
-                            } header: {
-                                Label(time.title, systemImage: time.symbol)
-                            }
-                        }
-                    }
-
-                    // Supplements, die heute nicht dran sind – mit dem nächsten Termin
-                    if !notDueToday.isEmpty {
-                        Section("Heute nicht dran") {
-                            ForEach(notDueToday) { supplement in
-                                PausedRow(supplement: supplement,
-                                          onDelete: { delete(supplement) })
-                            }
+            // Ein Fach pro Tageszeit
+            ForEach(DayTime.allCases) { time in
+                PillCompartment(time: time) {
+                    let planned = dueToday.filter { $0.isScheduled(at: time) }
+                    if planned.isEmpty {
+                        Text("leer")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(planned) { supplement in
+                            SupplementRow(
+                                supplement: supplement,
+                                isTaken: takenBinding(for: supplement, at: time),
+                                onDelete: { delete(supplement) }
+                            )
                         }
                     }
                 }
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden) // Papier der Karte scheint durch
+            }
+
+            if supplements.isEmpty {
+                Text("Klicke auf +, um dein erstes Supplement einzusortieren.")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.9))
+            }
+
+            // Supplements, die heute nicht dran sind – mit dem nächsten Termin
+            if !notDueToday.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Heute nicht dran")
+                        .font(.caption.bold())
+                    ForEach(notDueToday) { supplement in
+                        PausedRow(supplement: supplement,
+                                  onDelete: { delete(supplement) })
+                    }
+                }
+                .padding(10)
+                .background(.white.opacity(0.75), in: RoundedRectangle(cornerRadius: 10))
             }
         }
-        .padding()
+        .padding(14)
+        // Der Kunststoff-Korpus der Box
+        .background {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(red: 0.36, green: 0.55, blue: 0.75).gradient)
+                .shadow(color: .black.opacity(0.35), radius: 8, y: 5)
+        }
+        .environment(\.colorScheme, .light)
         // Ein "Sheet" ist ein Fenster, das von oben über die Ansicht gleitet.
         .sheet(isPresented: $isAdding) {
             AddSupplementSheet { supplement in
@@ -106,6 +115,31 @@ struct SupplementTrackerView: View {
                 }
             }
         )
+    }
+}
+
+/// Ein Fach der Tablettenbox mit farbigem Deckel-Etikett.
+private struct PillCompartment<Content: View>: View {
+    let time: DayTime
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label(time.title, systemImage: time.symbol)
+                .font(.headline)
+            content
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            // Das Fach: hell, mit leichtem Innenschatten-Effekt durch den Rand
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.white.opacity(0.92))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(Color.black.opacity(0.12), lineWidth: 2)
+                }
+        }
     }
 }
 

@@ -19,32 +19,43 @@ struct NoteListView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Notizen")
-                    .font(.title2.bold())
+                Text("Klebezettel")
+                    .font(.title3.bold())
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.5), radius: 2, y: 1)
                 Spacer()
-                Button("Neue Notiz", systemImage: "plus") { isCreating = true }
+                Button("Neuer Zettel", systemImage: "plus") { isCreating = true }
+                    .labelStyle(.iconOnly)
+                    .help("Neuer Klebezettel")
             }
 
             if notes.isEmpty {
-                ContentUnavailableView(
-                    "Keine Notizen",
-                    systemImage: "note.text",
-                    description: Text("Lege oben deine erste Notiz an.")
-                )
-            } else {
-                List {
-                    ForEach(notes) { note in
-                        NoteRow(note: note,
-                                onEdit: { editingNote = note },
-                                onDelete: { delete(note) })
-                    }
-                    .onDelete(perform: delete)
+                // Ein leerer Zettel als Hinweis
+                StickyNote(index: 0) {
+                    Text("Noch keine Zettel.\nKlicke auf +, um einen anzukleben.")
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden) // Papier der Karte scheint durch
+                .onTapGesture { isCreating = true }
+                Spacer(minLength: 0)
+            } else {
+                // Eine "ScrollView" macht den Bereich scrollbar, wenn viele Zettel da sind.
+                ScrollView {
+                    VStack(spacing: 18) {
+                        ForEach(Array(notes.enumerated()), id: \.element.id) { index, note in
+                            StickyNote(index: index) {
+                                NoteRow(note: note,
+                                        onEdit: { editingNote = note },
+                                        onDelete: { delete(note) })
+                            }
+                        }
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 8)
+                }
+                .scrollIndicators(.never)
             }
         }
-        .padding()
         // Fenster zum Bearbeiten einer bestehenden Notiz
         .sheet(item: $editingNote) { note in
             NoteEditor(note: note) { title, body, reminder in
@@ -69,10 +80,33 @@ struct NoteListView: View {
         modelContext.delete(note)
     }
 
-    private func delete(at offsets: IndexSet) {
-        for index in offsets {
-            delete(notes[index])
-        }
+}
+
+/// Ein einzelner Klebezettel: farbiges Quadrat mit Schatten, leicht schräg.
+private struct StickyNote<Content: View>: View {
+    /// Position in der Liste – damit nicht alle Zettel gleich aussehen.
+    let index: Int
+    @ViewBuilder let content: Content
+
+    private static var colors: [Color] { [
+        Color(red: 1.0, green: 0.93, blue: 0.55),   // gelb
+        Color(red: 1.0, green: 0.80, blue: 0.85),   // rosa
+        Color(red: 0.75, green: 0.92, blue: 0.78),  // grün
+        Color(red: 0.78, green: 0.88, blue: 1.0)    // blau
+    ] }
+    private static var angles: [Double] { [-1.5, 1.2, -0.6, 1.8] }
+
+    var body: some View {
+        content
+            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
+            .background {
+                Rectangle()
+                    .fill(Self.colors[index % Self.colors.count].gradient)
+                    .shadow(color: .black.opacity(0.3), radius: 3, x: 1, y: 3)
+            }
+            .rotationEffect(.degrees(Self.angles[index % Self.angles.count]))
+            .environment(\.colorScheme, .light) // Papier bleibt hell
     }
 }
 
