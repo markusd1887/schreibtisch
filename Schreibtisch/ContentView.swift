@@ -3,15 +3,19 @@ import SwiftData
 
 /// Die Hauptansicht der App.
 /// Später wird hier das Schreibtisch-Dashboard mit mehreren Kacheln stehen.
-/// Vorerst zeigen wir nur die To-Do-Liste.
+/// Vorerst zeigen wir To-Dos und Notizen einfach nebeneinander.
 struct ContentView: View {
     var body: some View {
-        TodoListView()
-            .frame(minWidth: 400, minHeight: 400)
+        HStack(spacing: 0) {
+            TodoListView()
+            Divider()
+            NoteListView()
+        }
+        .frame(minWidth: 800, minHeight: 450)
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: TodoItem.self, inMemory: true)
+        .modelContainer(for: [TodoItem.self, Note.self], inMemory: true)
 }
