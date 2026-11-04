@@ -34,9 +34,13 @@ Der Nutzer schreibt oft einen längeren Prompt mit mehreren Wünschen. Dann:
 - Jede Sitzung committet nur ihre eigenen Dateien (`git add <dateien>`, nicht `git add -A`).
 - Keine Worktrees (getrennte Projektkopien) – zu kompliziert für den Anfang.
 
-## Später geplant (noch nicht umsetzen!)
+## Anbindung an Apple-Kalender (EventKit)
 Ziel: Am Mac alles in dieser App erledigen und unterwegs dieselben Daten auf dem iPhone haben.
-- **Kalender**: Über **EventKit** (Apple-Framework) die Termine der Kalender-App anzeigen, später auch anlegen. iCloud synchronisiert automatisch mit dem iPhone. Erster Schritt: nur lesend, Termine auf dem Tagesblatt.
+- **Tischkalender** (`DeskCalendarView`, links auf dem Tisch) zeigt die echten Termine aus dem Mac-Kalender über **EventKit** (`CalendarStore`). iCloud synchronisiert automatisch mit dem iPhone. Termine werden **nicht** in SwiftData gespeichert.
+- Die Kalender-Abfrage von macOS kommt erst, wenn der Nutzer auf „Kalender verbinden“ klickt. Nie automatisch beim Start oder in Test-/Vorschau-Programmen auslösen.
+- Nächste Schritte: (2) Termine über einen +-Knopf anlegen, (3) evtl. Markierungen im Wandkalender bzw. Termine auf dem Tagesblatt.
+
+## Später geplant (noch nicht umsetzen!)
 - **To-Dos → App „Erinnerungen“**: Die To-Dos werden später über EventKit in den Apple-Erinnerungen gespeichert statt in SwiftData. Deshalb jetzt an den To-Dos vor allem Optik und Bedienung ausbauen, nicht das SwiftData-Datenmodell aufwendig erweitern.
 - **Notizen** bleiben in der App (SwiftData). Für Apple Notizen gibt es keine offizielle Schnittstelle.
 - Das passt weiter zu „alles lokal“: kein eigener Server, die Daten laufen nur über den iCloud-Account des Nutzers.

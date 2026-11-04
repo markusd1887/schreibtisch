@@ -3,18 +3,22 @@ import SwiftData
 
 /// Die Hauptansicht der App: der Schreibtisch mit der Wand dahinter.
 ///
-/// Oben die Wand (`WallView`): Monatskalender, Fenster, Uhr und Regal.
+/// Oben die Wand (`WallView`): Monatskalender, Fenster, Uhr und Regal mit der Pillendose.
 ///
 /// Unten die Tischplatte:
 /// - links: Klebezettel (Notizen mit optionaler Erinnerung)
 /// - Mitte: die Lederunterlage mit dem Tagesblatt (To-Dos + Notizen zum Tag)
-/// - rechts: die Tablettenbox (Supplements)
+/// - rechts: der Tischkalender (Termine aus dem Mac-Kalender)
 ///
-/// Unter der Tablettenbox ist bewusst Platz frei –
+/// Unter dem Tischkalender ist bewusst Platz frei –
 /// dort können später weitere Dinge auf den Tisch (z. B. Wasserglas, Sanduhr).
 struct ContentView: View {
     /// Der aufgeschlagene Tag. Er liegt hier, damit Kalender und Unterlage ihn teilen.
     @State private var day = Calendar.current.startOfDay(for: .now)
+
+    /// Die Verbindung zum Mac-Kalender. Sie wird per `.environment` an alle
+    /// Ansichten weitergereicht, die Termine brauchen.
+    @State private var calendarStore = CalendarStore()
 
     /// Höhe der Wand. Bewusst niedrig gehalten, damit auch auf einem
     /// MacBook-Bildschirm genug Platz für den Schreibtisch bleibt.
@@ -27,6 +31,7 @@ struct ContentView: View {
             desk
         }
         .frame(minWidth: 1180, minHeight: 780)
+        .environment(calendarStore)
     }
 
     /// Die Tischplatte mit allem, was darauf liegt.
@@ -45,7 +50,7 @@ struct ContentView: View {
 
             // Rechte Tischseite
             VStack(spacing: 24) {
-                SupplementTrackerView()
+                DeskCalendarView()
                 // Platz für später (z. B. Wasserglas, Sanduhr)
                 Spacer(minLength: 0)
             }

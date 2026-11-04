@@ -258,17 +258,24 @@ private struct WallClock: View {
 
 // MARK: - Regal
 
-/// Ein Wandregal mit ein paar Büchern und einer Pflanze. (Noch reine Deko.)
+/// Ein Wandregal mit Büchern, der Pillendose und einer Pflanze.
+/// Bücher und Pflanze sind Deko; die Pillendose (`ShelfPillBox`) kann man anklicken.
 private struct Shelf: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .bottom, spacing: 3) {
-                book(Color(red: 0.45, green: 0.17, blue: 0.14), width: 14, height: 46)
-                book(Color(red: 0.30, green: 0.40, blue: 0.30), width: 12, height: 40)
-                book(Color(red: 0.18, green: 0.24, blue: 0.38), width: 16, height: 50)
-                book(Color.brassDark, width: 10, height: 38)
+                HStack(alignment: .bottom, spacing: 3) {
+                    book(Color(red: 0.45, green: 0.17, blue: 0.14), width: 14, height: 46)
+                    book(Color(red: 0.30, green: 0.40, blue: 0.30), width: 12, height: 40)
+                    book(Color(red: 0.18, green: 0.24, blue: 0.38), width: 16, height: 50)
+                    book(Color.brassDark, width: 10, height: 38)
+                }
+                .accessibilityHidden(true)
+                Spacer()
+                ShelfPillBox()
                 Spacer()
                 Plant()
+                    .accessibilityHidden(true)
             }
             .padding(.horizontal, 16)
 
@@ -277,8 +284,8 @@ private struct Shelf: View {
                 .fill(LinearGradient(colors: [.walnutLight, .walnut], startPoint: .top, endPoint: .bottom))
                 .frame(height: 9)
                 .shadow(color: .black.opacity(0.35), radius: 4, y: 4)
+                .accessibilityHidden(true)
         }
-        .accessibilityHidden(true)
     }
 
     private func book(_ color: Color, width: CGFloat, height: CGFloat) -> some View {
