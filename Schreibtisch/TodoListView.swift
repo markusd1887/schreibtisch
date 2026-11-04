@@ -54,6 +54,7 @@ struct TodoListView: View {
                     .onDelete(perform: delete)
                 }
                 .listStyle(.inset)
+                .scrollContentBackground(.hidden) // Papier der Karte scheint durch
             }
         }
         .padding()

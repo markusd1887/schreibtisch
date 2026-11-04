@@ -65,6 +65,7 @@ struct SupplementTrackerView: View {
                     }
                 }
                 .listStyle(.inset)
+                .scrollContentBackground(.hidden) // Papier der Karte scheint durch
             }
         }
         .padding()
