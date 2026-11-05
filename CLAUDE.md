@@ -38,7 +38,8 @@ Der Nutzer schreibt oft einen längeren Prompt mit mehreren Wünschen. Dann:
 Ziel: Am Mac alles in dieser App erledigen und unterwegs dieselben Daten auf dem iPhone haben.
 - **Tischkalender** (`DeskCalendarView`, links auf dem Tisch) zeigt die echten Termine aus dem Mac-Kalender über **EventKit** (`CalendarStore`). iCloud synchronisiert automatisch mit dem iPhone. Termine werden **nicht** in SwiftData gespeichert.
 - Die Kalender-Abfrage von macOS kommt erst, wenn der Nutzer auf „Kalender verbinden“ klickt. Nie automatisch beim Start oder in Test-/Vorschau-Programmen auslösen.
-- Nächste Schritte: (2) Termine über einen +-Knopf anlegen, (3) evtl. Markierungen im Wandkalender bzw. Termine auf dem Tagesblatt.
+- Fertig: Termine anzeigen (Tischkalender), Markierungen im Wandkalender, Termine anlegen (`AddEventSheet`).
+- Mögliche nächste Schritte: Termine bearbeiten/löschen, Termine auf dem Tagesblatt.
 
 ## Später geplant (noch nicht umsetzen!)
 - **To-Dos → App „Erinnerungen“**: Die To-Dos werden später über EventKit in den Apple-Erinnerungen gespeichert statt in SwiftData. Deshalb jetzt an den To-Dos vor allem Optik und Bedienung ausbauen, nicht das SwiftData-Datenmodell aufwendig erweitern.
