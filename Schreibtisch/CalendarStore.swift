@@ -80,6 +80,17 @@ final class CalendarStore {
         reloadMarks()
     }
 
+    /// Holt die Termine eines beliebigen Tages direkt aus dem Kalender –
+    /// auch weit in der Zukunft (für das kleine Fenster am Wandkalender).
+    func fetchEvents(on day: Date) -> [EKEvent] {
+        guard access == .granted else { return [] }
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: day)
+        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+        let predicate = store.predicateForEvents(withStart: dayStart, end: dayEnd, calendars: nil)
+        return store.events(matching: predicate).sorted { $0.startDate < $1.startDate }
+    }
+
     // MARK: Termine anlegen
 
     /// Kalender, in die man Termine eintragen darf (z. B. nicht "Feiertage" oder "Geburtstage").

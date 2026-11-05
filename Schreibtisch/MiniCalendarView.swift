@@ -8,6 +8,8 @@ import SwiftData
 /// - Ein Punkt unter dem Tag: Es gibt offene To-Dos.
 /// - Eine kleine Glocke: Ein Klebezettel erinnert an diesem Tag.
 /// - Klick auf einen Tag schlägt ihn auf der Unterlage auf.
+///   Hat der Tag Markierungen, öffnet sich zusätzlich ein kleines Fenster,
+///   das zeigt, was an dem Tag ansteht (`DayDetailPopover`).
 struct MiniCalendarView: View {
     /// Der Tag, der auf der Unterlage aufgeschlagen ist (gehört der Hauptansicht).
     @Binding var selectedDay: Date
@@ -19,6 +21,9 @@ struct MiniCalendarView: View {
 
     /// Der Monat, der gerade im Kalender zu sehen ist (erster Tag des Monats).
     @State private var month = MiniCalendarView.startOfMonth(.now)
+
+    /// Der Tag, dessen kleines Fenster gerade offen ist (`nil` = keins).
+    @State private var popoverDay: Date?
 
     private let calendar = Calendar.current
 
@@ -95,13 +100,30 @@ struct MiniCalendarView: View {
             ForEach(Array(cells.enumerated()), id: \.offset) { _, date in
                 if let date {
                     let key = calendar.startOfDay(for: date)
+                    let eventColor = calendarStore.monthMarks[key]
+                    let hasTodos = openTodoDays.contains(key)
+                    let hasReminder = reminderDays.contains(key)
                     DayCell(date: date,
                             isSelected: calendar.isDate(date, inSameDayAs: selectedDay),
                             isToday: calendar.isDateInToday(date),
-                            eventColor: calendarStore.monthMarks[key],
-                            hasTodos: openTodoDays.contains(key),
-                            hasReminder: reminderDays.contains(key))
-                        .onTapGesture { selectedDay = key }
+                            eventColor: eventColor,
+                            hasTodos: hasTodos,
+                            hasReminder: hasReminder)
+                        .onTapGesture {
+                            selectedDay = key
+                            if eventColor != nil || hasTodos || hasReminder {
+                                popoverDay = key
+                            }
+                        }
+                        .popover(isPresented: Binding(
+                            get: { popoverDay == key },
+                            set: { isShown in if !isShown { popoverDay = nil } }
+                        ), arrowEdge: .bottom) {
+                            DayDetailPopover(day: key,
+                                             events: calendarStore.fetchEvents(on: key),
+                                             todos: openTodos(on: key),
+                                             reminders: reminders(on: key))
+                        }
                 } else {
                     Color.clear.frame(height: 21) // leeres Feld vor dem 1. des Monats
                 }
@@ -127,6 +149,24 @@ struct MiniCalendarView: View {
     /// Ein `Set` ist eine Sammlung ohne Doppelte – schnell zum Nachschauen.
     private var daysWithOpenTodos: Set<Date> {
         Set(todos.filter { !$0.isDone }.compactMap { $0.day.map(calendar.startOfDay(for:)) })
+    }
+
+    /// Die offenen Aufgaben eines Tages (für das kleine Fenster).
+    private func openTodos(on day: Date) -> [TodoItem] {
+        todos
+            .filter { todo in
+                !todo.isDone && todo.day.map { calendar.isDate($0, inSameDayAs: day) } == true
+            }
+            .sorted { $0.createdAt < $1.createdAt }
+    }
+
+    /// Die Klebezettel, die an diesem Tag erinnern (für das kleine Fenster).
+    private func reminders(on day: Date) -> [Note] {
+        notes
+            .filter { note in
+                note.reminderDate.map { calendar.isDate($0, inSameDayAs: day) } == true
+            }
+            .sorted { ($0.reminderDate ?? .distantPast) < ($1.reminderDate ?? .distantPast) }
     }
 
     /// Tage, an denen ein Klebezettel eine Erinnerung hat.
