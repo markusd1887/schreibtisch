@@ -9,6 +9,9 @@ import AppKit
 struct DeskCalendarView: View {
     @Environment(CalendarStore.self) private var calendarStore
 
+    /// Ist das Fenster "Neuer Termin" offen?
+    @State private var isAdding = false
+
     var body: some View {
         VStack(spacing: 0) {
             RingBinding()
@@ -32,13 +35,23 @@ struct DeskCalendarView: View {
         }
         .shadow(color: .black.opacity(0.4), radius: 6, y: 4)
         .environment(\.colorScheme, .light) // Papier bleibt hell
+        .sheet(isPresented: $isAdding) {
+            AddEventSheet()
+        }
     }
 
-    /// Bordeaux-Streifen mit dem heutigen Datum.
+    /// Bordeaux-Streifen mit dem heutigen Datum und dem +-Knopf.
     private var header: some View {
         HStack {
             Image(systemName: "calendar")
             Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)))
+            Spacer()
+            if calendarStore.access == .granted {
+                Button("Neuer Termin", systemImage: "plus") { isAdding = true }
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.borderless)
+                    .help("Neuer Termin")
+            }
         }
         .font(.subheadline.bold())
         .foregroundStyle(.white)

@@ -80,6 +80,39 @@ final class CalendarStore {
         reloadMarks()
     }
 
+    // MARK: Termine anlegen
+
+    /// Kalender, in die man Termine eintragen darf (z. B. nicht "Feiertage" oder "Geburtstage").
+    var writableCalendars: [EKCalendar] {
+        guard access == .granted else { return [] }
+        return store.calendars(for: .event)
+            .filter(\.allowsContentModifications)
+            .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+    }
+
+    /// Der Kalender, den du in der Kalender-App als Standard eingestellt hast.
+    var defaultCalendarID: String? {
+        store.defaultCalendarForNewEvents?.calendarIdentifier
+    }
+
+    /// Legt einen Termin im Mac-Kalender an. Liegt der Kalender in iCloud,
+    /// erscheint der Termin danach automatisch auch auf dem iPhone.
+    ///
+    /// `throws` heißt: Das Speichern kann fehlschlagen – dann bekommt der Aufrufer einen Fehler.
+    func addEvent(title: String, start: Date, end: Date, isAllDay: Bool, calendarID: String?) throws {
+        let event = EKEvent(eventStore: store)
+        event.title = title
+        event.startDate = start
+        event.endDate = end
+        event.isAllDay = isAllDay
+        event.calendar = calendarID.flatMap { store.calendar(withIdentifier: $0) }
+            ?? store.defaultCalendarForNewEvents
+        try store.save(event, span: .thisEvent, commit: true)
+        reload()
+    }
+
+    // MARK: Markierungen für den Wandkalender
+
     /// Der Wandkalender meldet hier, welchen Monat er zeigt (erster Tag des Monats).
     func loadMarks(forMonth month: Date) {
         markedMonth = month
